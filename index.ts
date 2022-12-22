@@ -1,151 +1,99 @@
-// переменная с типом число
-let myNumber: number;
+// создать с помощью Record тип объекта ключи которого любая строка, а значения строка или число
+type myCollectionOfNumberOrString = Record<string, number | string>;
 
-// переменная с типом строка
-let myString: string;
+// создать тип на основе BaseType с помощью утилити тайпов, но все поля должны быть обязательны
+interface BaseType {
+  id: number;
+  age?: number;
+  name?: string;
+}
 
-// переменная с типом 2 или 3
-let twoOrThree: 2 | 3;
+type RequiredType = Required<BaseType>;
 
-// переменная с типом строка или булево или undefined
-let StringOrBoolOrNothing: string | boolean | undefined;
+// создать тип на основе BaseType с помощью утилити тайпов, но все поля должны быть ридонли
+type ReaodnlyType = Readonly<BaseType>;
 
-// переменная с типом массива строк
-let arrayOfString: string[];
+// вывести с помощью утилити тайпов тип возвращаемого значения функции
+const sum = (a: number, b: number): number => a + b;
 
-// переменная с типом массива строк или чисел
-let arrayOfStringOrNumbers: string[] | number[];
+type SumReturn = ReturnType<typeof sum>;
 
-// переменная с типом массива (кортежа) из трех элементов: первый - строка, второй число, третий объект с полями id (число) и label (строка)
-let myTuple: [string, number, { id: number, label: string }];
+// создать тип на основе данного выбрав только поля id и label
+interface Car {
+  id: number;
+  price: number;
+  label: string;
+}
 
-// переменная с типом объекта ключи которого любая строка, а значения строка или число
-let myCollectionOfNumberOrString: { [key: string]: string | number };
+type CarNoCost = Pick<Car, "id" & "label">;
 
-// Переписать объект на enum
-enum USER_ROLES {
-  ADMIN = 'admin',
-  GUEST = 'guest',
-  UNKNOWN = 'unknown',
+// создать интерфейс на основе User у которого нет поля id, а все остальные поля - опциональные
+interface User {
+  id: number;
+  name: string;
+  age: number;
+  friends: User[];
+}
+
+type NewUser = Omit<Partial<User>, "id">;
+
+// Написать дженерик тип, который достает второй параметр функии
+type Sum = (a: number, b: number) => number;
+type Log = (msg: string, role: 'admin' | 'user') => number;
+
+let func: Sum | Log;
+
+type SecondParam = Parameters<typeof func>[1];
+
+
+// напр: SecondParam<typeof Sum> => number
+// напр: SecondParam<typeof Log> => 'admin' | 'user'
+
+// сделать тип обязательным с помощью утили тайпов, т.е. чтобы не мог быть null
+type Type = string | number | boolean | null | undefined;
+type TypeWithNull = NonNullable<Type>;
+
+let x: TypeWithNull;
+
+// написать дженерик обратный NonNullable, т.е. чтобы к текущему типу добавлся тип null | undefined;
+type Nullable = Extract<Type, TypeWithNull>;
+
+// с помощью дженерика затипизировать функцию
+const packToObject = <O extends Object>(value: O) => ({ value });
+
+// Создать класс Logger применив интерфейс ILogger
+interface ILogger {
+  log: () => void;
+}
+
+class Logger implements ILogger {
+
+  log: () => void; 
 };
 
-// Создать аналогичные друг другу интерфейс и тип: объект со свойствами id типа число и name типа строка
-type User1 = {id: number, name: string};
-interface User2 {id: number, name: string};
+// сделать метод доступным только самого класса, метод logB доступным для самого класса и классов наследников,
+// метод статическим и доступным только для самого класса
+class TestClassA {
+  static logA () {}
 
-// "Наследуясь" от предыдущих типов User1 и User2 создать новые аналогичные тип и интерфейс у которых помимо id и name будет еще свойство isAdmin с типом true
-type Admin1 = User1 & { isAdmin: true };
-interface Admin2 extends User2 { isAdmin: true };
+  logB () {}
 
-// Создать аналогичные друг другу интерфейс и тип: объект с обязательным неизменяемым свойством id типа число, обязательным полем name типа строка и опциональным полем gender с типом либо 'male' либо 'female'
-type Guest1 = { readonly id: number, name: string, gender?: male | female};
-interface Guest2 { readonly id: number, name: string, gender?: male | female};
-
-// Затипизировать входящие параметры "x" и "y" как числа и возвращаемое значение
-const sumTwoNumbers = (x: number, y: number): number => x + y;
-
-// Затипизировать входящие параметры "x", "y" и "z" как числа. Параметр "z" должен быть необязательным. Написать корректную реализацию функции с учетом необязательности "z"
-const sumThreeNumbers = (x: number, y: number, z: number = 0): number => {
-  return x + y + z;
-};
-
-// Написать перегрузку и реализацию функции sum такую что: 1) если на вход приходят два числа, то возвращается число 2) если на входит приходит строка и число или обе строки, то возвращается строка
-function sum(x: number, y: number ): number;
-
-function sum(x: number, y: string): string;
-
-function sum(x: string, y: number): string;
-
-function sum(x: string, y: string): string;
-
-function sum(x: number | string, y: number | string): string | number {
-    if(typeof x === "number" && typeof y === "number") {
-        return x + y;
-    } else {
-        return `${x} ${y}`
-    }
+  private static logC () {}
 }
 
-
-// Затипизировать this
-function getName(this: [], id: number) {
-  return this[id].name;
-}
-
-// Затипизировать возвращаемое значение
-const sayHi = (): void => {
-  console.log('hi');
-}
-
-// Тип значение которого может быть тип Book или Car
-interface Book {}
-interface Car {}
-type BookOrCar = Book | Car;
-
-// Используя типы House, City, Country создать новый тип FullAddress который включает все свойства вышеперечисленных
-interface House { apartment: number }
-interface City { zipCode: number }
-interface Country { name: string }
-type FullAddress = House & City & Country;
-
-// переменная с типом строка, начинающаяся с префикса "id:" и дальше числовое id. Например, let myId = 'id:2'
-let prefixedId: string = `${"id"}${number}`; // Как в переменную положить неизвесное число типа number?
-
-// Нам точно известно, что в качестве параметра "x" придет число. Изменять типизацию функции (параметров или возвращаемого значения) нельзя.
-const f = (x: number | string): number => {
-  // На данной строке нужно исправить текущую ошибку путем приведения типа "x" от текущего число или строка к только число
-  return x as number;
-}
-
-// переменная с типом массива строк, который нельзя изменять (например, пушить в него значения)
-let readonlyStringArray: readonly string[];
-
-// Сделать переменную неизменяемой (чтобы на уровне типизации ее нельзя было мутировать) ?
-const USER = {
-  id: 1,
-  name: 'Alex',
-};
-
-// Написать реализацию функции getArea, чтобы она рассчитывала и возвращала площадь фигуры 
-interface Circle { type: 'circle', radius: number }
-interface Square { type: 'square', side: number }
-
-const getArea = (shape: Circle | Square): number => {
-  if(shape.type === "circle") {
-    const circleArea = Math.PI * Math.pow(shape.radius, 2);
-    return circleArea;
+class TestClassB extends TestClassA {
+  log () {
+    this.logA(); // должен быть недоступен
+    this.logB(); // должен быть ок
   }
-  return Math.pow(shape.side, 2);
-  // if(shape.type === "square") {
-  //   const squareArea = Math.pow(shape.side, 2);
-  //   return squareArea;
-  // }
-}
-
-// У функции toLowerCase ошибка типизации т.к. value может быть числом, а у числа нету метода toLowerCase. Изменять типизацию функции (параметров или возвращаемого значения) нельзя.
-// Нужно решать проблему любыми двумя способами. ?
-const toLowerCase1 = (value: string | number): number | string => {
-  if(typeof value === "string") {
-    return value.toLowerCase();
-  }
-  return value;
-}
-
-const toLowerCase2 = (value: string | number): number | string => {
-  return (value as string).toLowerCase();
 }
 
 
-// У функции log ошибка типизации, т.к. метод log есть только у класса Logger. Изменять типизацию функции (параметров или возвращаемого значения) нельзя.
-// Нужно исправить функцию так, чтобы метод лог вызывался только в случае если value - инстанс класса Logger, иначе логировать value c помощью console.log
-class Logger {
-  log() {};
+// не создавая новые типы затипизировать функцию startWatch
+class Watcher {
+  watch () {}
 }
 
-const log = (value: Logger | string | number | boolean) => {
-  if(value instanceof Logger) {
-    value.log();
-  } else {
-    console.log(value);
-  }
+const startWatch = <O extends Watcher>(value: O) => {
+  value.watch();
 }
